@@ -1,0 +1,17 @@
+[Unit]
+Description=Passive Income Manager Dashboard
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+User=root
+# Change this to your installation directory
+WorkingDirectory=/path/to/Money-tree-tools
+# Change this to your venv python path
+ExecStart=/path/to/Money-tree-tools/venv/bin/python3 -m app.main
+Restart=always
+RestartSec=5
+Environment="PYTHONPATH=/path/to/Money-tree-tools"
+
+[Install]
+WantedBy=multi-user.target

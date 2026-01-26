@@ -1,0 +1,7 @@
+Flask
+docker
+psutil
+python-dotenv
+fabric
+pyyaml
+tabulate

@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  honeygain:
+    image: honeygain/honeygain
+    container_name: honeygain
+    restart: always
+    command: -tou-accept -email ${HONEYGAIN_EMAIL} -pass ${HONEYGAIN_PASSWORD} -device ${DEVICE_NAME:-Server}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+    environment:
+      - HONEYGAIN_EMAIL=${HONEYGAIN_EMAIL}
+      - HONEYGAIN_PASSWORD=${HONEYGAIN_PASSWORD}
+
+  earnapp:
+    image: fazalfarhan01/earnapp
+    container_name: earnapp
+    restart: always
+    environment:
+      - EARNAPP_UUID=${EARNAPP_UUID}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  traffmonetizer:
+    image: traffmonetizer/cli_v2
+    container_name: traffmonetizer
+    restart: always
+    command: start accept --token ${TRAFFMONETIZER_TOKEN} --device-name ${DEVICE_NAME:-Server}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  packetstream:
+    image: packetstream/psclient
+    container_name: packetstream
+    restart: always
+    environment:
+      - CID=${PACKETSTREAM_CID}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  repocket:
+    image: repocket/repocket
+    container_name: repocket
+    restart: always
+    environment:
+      - RP_EMAIL=${REPOCKET_EMAIL}
+      - RP_API_KEY=${REPOCKET_API_KEY}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  earnfm:
+    image: earnfm/earnfm-client
+    container_name: earnfm
+    restart: always
+    environment:
+      - EARNFM_TOKEN=${EARNFM_TOKEN}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  # Note: Grass, Uprock, PacketShare images are provisional and may need specific community builds
+  # Check documentation for latest stable images
+  
+  grass:
+    image: mrdococ/grass-node
+    container_name: grass
+    restart: always
+    environment:
+      - GRASS_USER=${GRASS_USER}
+      - GRASS_PASS=${GRASS_PASS}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  uprock:
+    image: uprock/uprock
+    container_name: uprock
+    restart: always
+    environment:
+      - UPROCK_TOKEN=${UPROCK_TOKEN}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  packetshare:
+    image: packetshare/packetshare
+    container_name: packetshare
+    restart: always
+    environment:
+      - PACKETSHARE_EMAIL=${PACKETSHARE_EMAIL}
+      - PACKETSHARE_PASSWORD=${PACKETSHARE_PASSWORD}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
