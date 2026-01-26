@@ -145,6 +145,23 @@ def deploy_device(device):
         conn.sudo(f"mkdir -p {remote_dir}")
         conn.sudo(f"chown -R {user}:{user} {remote_dir}")
         
+        # Backup existing configuration and crucial files
+        print(f"[{box_id}] Checking for existing configuration to backup...", flush=True)
+        backup_timestamp = int(time.time())
+        files_to_backup = [".env", "docker-compose.yml"]
+        
+        for fname in files_to_backup:
+            try:
+                # Check if file exists
+                conn.run(f"test -f {remote_dir}/{fname}")
+                # Create backup
+                backup_name = f"{fname}.backup.{backup_timestamp}"
+                conn.run(f"cp {remote_dir}/{fname} {remote_dir}/{backup_name}")
+                print(f"[{box_id}] Backup created: {backup_name}", flush=True)
+            except:
+                # File doesn't exist, skip
+                pass
+
         if os.path.exists("deploy_package.tar.gz"):
              conn.put("deploy_package.tar.gz", remote_dir)
              # Extract

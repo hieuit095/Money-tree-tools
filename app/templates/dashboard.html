@@ -270,6 +270,90 @@
                 <p class="text-slate-500 text-sm mt-1">Advanced system configuration and variables.</p>
             </header>
 
+            <!-- Update Section -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8" x-data="{ 
+                checkStatus: 'idle', 
+                updateStatus: 'idle', 
+                message: '',
+                checkUpdate() {
+                    this.checkStatus = 'checking';
+                    this.message = 'Checking for updates...';
+                    fetch('/api/check-update')
+                        .then(res => res.json())
+                        .then(data => {
+                            if(data.status === 'update-available') {
+                                this.checkStatus = 'available';
+                                this.message = 'New version available! (' + data.remote_hash.substring(0,7) + ')';
+                            } else if(data.status === 'up-to-date') {
+                                this.checkStatus = 'uptodate';
+                                this.message = 'System is up to date.';
+                            } else {
+                                this.checkStatus = 'error';
+                                this.message = 'Error: ' + (data.message || 'Unknown error');
+                            }
+                        })
+                        .catch(err => {
+                            this.checkStatus = 'error';
+                            this.message = 'Network error checking update.';
+                        });
+                },
+                performUpdate() {
+                    if(!confirm('Are you sure you want to update? This will restart the application.')) return;
+                    this.updateStatus = 'updating';
+                    this.message = 'Updating system...';
+                    fetch('/api/perform-update', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if(data.status === 'success') {
+                                this.updateStatus = 'success';
+                                this.message = 'Update successful! Reloading...';
+                                setTimeout(() => window.location.reload(), 3000);
+                            } else {
+                                this.updateStatus = 'error';
+                                this.message = 'Update failed: ' + data.message;
+                            }
+                        })
+                        .catch(err => {
+                            this.updateStatus = 'error';
+                            this.message = 'Network error performing update.';
+                        });
+                }
+            }">
+                <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    System Update
+                </h2>
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-slate-600 mb-2">Check for the latest version from GitHub.</p>
+                        <p class="text-xs font-medium h-4 transition-colors duration-200" x-text="message" :class="{
+                            'text-green-600': checkStatus === 'available' || checkStatus === 'uptodate' || updateStatus === 'success',
+                            'text-red-600': checkStatus === 'error' || updateStatus === 'error',
+                            'text-slate-500': checkStatus === 'idle' || checkStatus === 'checking' || updateStatus === 'updating'
+                        }"></p>
+                    </div>
+                    
+                    <div>
+                        <button x-show="checkStatus === 'idle' || checkStatus === 'uptodate' || checkStatus === 'error'" 
+                                @click="checkUpdate()" 
+                                class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition text-sm flex items-center gap-2"
+                                :disabled="checkStatus === 'checking'">
+                            <span x-show="checkStatus === 'checking'" class="animate-spin h-4 w-4 border-2 border-slate-500 border-t-transparent rounded-full"></span>
+                            <span x-text="checkStatus === 'checking' ? 'Checking...' : 'Check for Updates'"></span>
+                        </button>
+                        
+                        <button x-show="checkStatus === 'available'" 
+                                @click="performUpdate()" 
+                                class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl transition text-sm flex items-center gap-2 shadow-sm shadow-green-500/20"
+                                :disabled="updateStatus === 'updating'">
+                            <span x-show="updateStatus === 'updating'" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                            <span x-text="updateStatus === 'updating' ? 'Updating...' : 'Update Now'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="glass-card rounded-2xl p-6 sm:p-8">
                 <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>

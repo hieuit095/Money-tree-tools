@@ -73,5 +73,41 @@ def save_configuration():
     save_config(data)
     return redirect(url_for('dashboard'))
 
+@app.route('/api/check-update')
+@requires_auth
+def check_update():
+    try:
+        # Fetch remote updates
+        subprocess.check_output(['git', 'fetch'], stderr=subprocess.STDOUT)
+        
+        # Get local and remote HEAD hashes
+        local_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode('utf-8')
+        remote_hash = subprocess.check_output(['git', 'rev-parse', 'origin/main']).strip().decode('utf-8')
+        
+        # Check if behind
+        status = "up-to-date"
+        if local_hash != remote_hash:
+             status = "update-available"
+             
+        return jsonify({
+            "status": status,
+            "local_hash": local_hash,
+            "remote_hash": remote_hash
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/perform-update', methods=['POST'])
+@requires_auth
+def perform_update():
+    try:
+        # Pull updates
+        output = subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT).decode('utf-8')
+        return jsonify({"status": "success", "message": output})
+    except subprocess.CalledProcessError as e:
+        return jsonify({"status": "error", "message": e.output.decode('utf-8')}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
