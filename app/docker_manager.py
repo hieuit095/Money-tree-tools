@@ -1,8 +1,21 @@
 import docker
 import subprocess
 import os
+from app.config_manager import load_config
 
 client = None
+
+SERVICE_MAP = {
+    "ENABLE_HONEYGAIN": "honeygain",
+    "ENABLE_EARNAPP": "earnapp",
+    "ENABLE_TRAFFMONETIZER": "traffmonetizer",
+    "ENABLE_PACKETSTREAM": "packetstream",
+    "ENABLE_REPOCKET": "repocket",
+    "ENABLE_EARNFM": "earnfm",
+    "ENABLE_GRASS": "grass",
+    "ENABLE_UPROCK": "uprock",
+    "ENABLE_PACKETSHARE": "packetshare"
+}
 
 def get_client():
     global client
@@ -76,3 +89,40 @@ def stop_all():
         return True, "Success"
     except subprocess.CalledProcessError as e:
         return False, str(e)
+
+def apply_docker_configuration():
+    """
+    Reads the current configuration and starts/stops containers based on ENABLE_* flags.
+    """
+    config = load_config()
+    results = []
+    
+    for enable_key, service_name in SERVICE_MAP.items():
+        should_enable = config.get(enable_key, 'false').lower() == 'true'
+        
+        if should_enable:
+            success, msg = control_container(service_name, "start")
+            action = "start"
+        else:
+            # We use stop instead of remove to keep logs/state if needed, 
+            # but user might expect 'disable' to mean 'off'. 
+            # 'stop' is sufficient.
+            success, msg = control_container(service_name, "stop")
+            action = "stop"
+            
+        results.append(f"{service_name}: {action} -> {'OK' if success else msg}")
+        
+    return results
+
+def get_container_logs(service_name, tail=200):
+    cli = get_client()
+    if not cli: return "Docker client not available"
+    
+    try:
+        container = cli.containers.get(service_name)
+        # logs returns bytes, need to decode
+        return container.logs(tail=tail).decode('utf-8')
+    except docker.errors.NotFound:
+        return f"Container '{service_name}' not found"
+    except Exception as e:
+        return f"Error getting logs: {str(e)}"

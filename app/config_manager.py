@@ -44,7 +44,11 @@ def get_required_fields():
         "GRASS_USER", "GRASS_PASS",
         "UPROCK_TOKEN",
         "PACKETSHARE_EMAIL", "PACKETSHARE_PASSWORD",
-        "DEVICE_NAME"
+        "DEVICE_NAME",
+        # Enable flags
+        "ENABLE_HONEYGAIN", "ENABLE_EARNAPP", "ENABLE_TRAFFMONETIZER", 
+        "ENABLE_PACKETSTREAM", "ENABLE_REPOCKET", "ENABLE_EARNFM", 
+        "ENABLE_GRASS", "ENABLE_UPROCK", "ENABLE_PACKETSHARE"
     ]
 
 def get_config_sections():
@@ -97,8 +101,9 @@ def get_config_sections():
             "subtitle": "Runs the Honeygain client container.",
             "instructions": [
                 "Use your Honeygain account email and password.",
-                "Save, then start the honeygain service."
+                "Enable the service to start generating."
             ],
+            "enable_key": "ENABLE_HONEYGAIN",
             "fields": [
                 {
                     "key": "HONEYGAIN_EMAIL",
@@ -124,6 +129,7 @@ def get_config_sections():
                 "Paste your EarnApp UUID here.",
                 "If you haven't linked a device yet, create an account and follow EarnApp's device setup steps first."
             ],
+            "enable_key": "ENABLE_EARNAPP",
             "fields": [
                 {
                     "key": "EARNAPP_UUID",
@@ -141,6 +147,7 @@ def get_config_sections():
             "instructions": [
                 "Generate a token in your TraffMonetizer dashboard and paste it here."
             ],
+            "enable_key": "ENABLE_TRAFFMONETIZER",
             "fields": [
                 {
                     "key": "TRAFFMONETIZER_TOKEN",
@@ -158,6 +165,7 @@ def get_config_sections():
             "instructions": [
                 "Find your CID in PacketStream settings and paste it here."
             ],
+            "enable_key": "ENABLE_PACKETSTREAM",
             "fields": [
                 {
                     "key": "PACKETSTREAM_CID",
@@ -176,6 +184,7 @@ def get_config_sections():
                 "Use your Repocket email and API key.",
                 "If you rotate your API key, update it here and restart the service."
             ],
+            "enable_key": "ENABLE_REPOCKET",
             "fields": [
                 {
                     "key": "REPOCKET_EMAIL",
@@ -200,6 +209,7 @@ def get_config_sections():
             "instructions": [
                 "Paste the EarnFM token for this device/account."
             ],
+            "enable_key": "ENABLE_EARNFM",
             "fields": [
                 {
                     "key": "EARNFM_TOKEN",
@@ -217,6 +227,7 @@ def get_config_sections():
             "instructions": [
                 "Use the credentials you created for Grass."
             ],
+            "enable_key": "ENABLE_GRASS",
             "fields": [
                 {
                     "key": "GRASS_USER",
@@ -241,6 +252,7 @@ def get_config_sections():
             "instructions": [
                 "Paste your Uprock token here."
             ],
+            "enable_key": "ENABLE_UPROCK",
             "fields": [
                 {
                     "key": "UPROCK_TOKEN",
@@ -258,6 +270,7 @@ def get_config_sections():
             "instructions": [
                 "Use your PacketShare account email and password."
             ],
+            "enable_key": "ENABLE_PACKETSHARE",
             "fields": [
                 {
                     "key": "PACKETSHARE_EMAIL",

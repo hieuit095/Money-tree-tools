@@ -66,23 +66,36 @@ def control(action, service):
     else:
         return jsonify({"status": "error", "message": msg}), 500
 
+@app.route('/api/logs/<service>')
+@requires_auth
+def get_logs(service):
+    logs = get_container_logs(service)
+    return jsonify({"logs": logs})
+
 @app.route('/save-config', methods=['POST'])
 @requires_auth
 def save_configuration():
     data = request.form.to_dict()
     save_config(data)
+    
+    # Apply the new configuration to the containers
+    apply_docker_configuration()
+    
     return redirect(url_for('dashboard'))
 
 @app.route('/api/check-update')
 @requires_auth
 def check_update():
     try:
+        # Ensure we run git commands in the project root
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
         # Fetch remote updates
-        subprocess.check_output(['git', 'fetch'], stderr=subprocess.STDOUT)
+        subprocess.check_output(['git', 'fetch'], stderr=subprocess.STDOUT, cwd=project_root)
         
         # Get local and remote HEAD hashes
-        local_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode('utf-8')
-        remote_hash = subprocess.check_output(['git', 'rev-parse', 'origin/main']).strip().decode('utf-8')
+        local_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=project_root).strip().decode('utf-8')
+        remote_hash = subprocess.check_output(['git', 'rev-parse', 'origin/main'], cwd=project_root).strip().decode('utf-8')
         
         # Check if behind
         status = "up-to-date"
@@ -94,6 +107,8 @@ def check_update():
             "local_hash": local_hash,
             "remote_hash": remote_hash
         })
+    except subprocess.CalledProcessError as e:
+        return jsonify({"status": "error", "message": f"Git error: {e.output.decode('utf-8') if e.output else str(e)}"}), 500
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
@@ -101,11 +116,13 @@ def check_update():
 @requires_auth
 def perform_update():
     try:
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
         # Pull updates
-        output = subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT).decode('utf-8')
+        output = subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT, cwd=project_root).decode('utf-8')
         return jsonify({"status": "success", "message": output})
     except subprocess.CalledProcessError as e:
-        return jsonify({"status": "error", "message": e.output.decode('utf-8')}), 500
+        return jsonify({"status": "error", "message": f"Update failed: {e.output.decode('utf-8') if e.output else str(e)}"}), 500
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
