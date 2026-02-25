@@ -1,5 +1,5 @@
 devices:
-  - ip: "192.168.1.17"
-    user: "hieu"
-    pass: "123456"
-    box_id: "123-abc"
+  - ip: "192.168.1.18"
+    user: "orangepi"
+    pass: "orangepi"
+    box_id: "op-192-168-1-18"

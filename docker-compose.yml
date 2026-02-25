@@ -2,9 +2,13 @@ version: '3.8'
 
 services:
   honeygain:
-    image: honeygain/honeygain
+    image: honeygain/honeygain@sha256:159d120caac9f482074d3e8d82d4cc247cd07e65af37bcc8e6b89c60674d5ed4
     container_name: honeygain
+    platform: ${HONEYGAIN_PLATFORM}
     restart: always
+    cpus: "0.50"
+    mem_limit: "192m"
+    pids_limit: 256
     command: -tou-accept -email ${HONEYGAIN_EMAIL} -pass ${HONEYGAIN_PASSWORD} -device ${DEVICE_NAME:-Server}
     logging:
       driver: "json-file"
@@ -15,22 +19,14 @@ services:
       - HONEYGAIN_EMAIL=${HONEYGAIN_EMAIL}
       - HONEYGAIN_PASSWORD=${HONEYGAIN_PASSWORD}
 
-  earnapp:
-    image: fazalfarhan01/earnapp
-    container_name: earnapp
-    restart: always
-    environment:
-      - EARNAPP_UUID=${EARNAPP_UUID}
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "5m"
-        max-file: "1"
-
   traffmonetizer:
-    image: traffmonetizer/cli_v2
+    image: traffmonetizer/cli_v2@sha256:bccfab5e2230534701119b89d6e8cf531f99fabd3c8b2a3b3ee03954c9c9ff69
     container_name: traffmonetizer
+    platform: ${TRAFFMONETIZER_PLATFORM}
     restart: always
+    cpus: "0.50"
+    mem_limit: "192m"
+    pids_limit: 256
     command: start accept --token ${TRAFFMONETIZER_TOKEN} --device-name ${DEVICE_NAME:-Server}
     logging:
       driver: "json-file"
@@ -39,9 +35,13 @@ services:
         max-file: "1"
 
   packetstream:
-    image: packetstream/psclient
+    image: packetstream/psclient@sha256:e5015592031fb6f3876582117f47995ecec8157a639e9fc3fcfe4af28b2c497a
     container_name: packetstream
+    platform: ${PACKETSTREAM_PLATFORM}
     restart: always
+    cpus: "0.50"
+    mem_limit: "128m"
+    pids_limit: 256
     environment:
       - CID=${PACKETSTREAM_CID}
     logging:
@@ -51,9 +51,13 @@ services:
         max-file: "1"
 
   repocket:
-    image: repocket/repocket
+    image: repocket/repocket@sha256:5888d756de7e0e74b95b5eb08bb93f4240a0ce840c910a7e528d1143ad0c502b
     container_name: repocket
+    platform: ${REPOCKET_PLATFORM}
     restart: always
+    cpus: "0.50"
+    mem_limit: "192m"
+    pids_limit: 256
     environment:
       - RP_EMAIL=${REPOCKET_EMAIL}
       - RP_API_KEY=${REPOCKET_API_KEY}
@@ -64,9 +68,13 @@ services:
         max-file: "1"
 
   earnfm:
-    image: earnfm/earnfm-client
+    image: earnfm/earnfm-client@sha256:96169b3cd1b5cf2fce74b24b72949037d9539eeceb70ecdbe6d8081839a5db32
     container_name: earnfm
+    platform: ${EARNFM_PLATFORM}
     restart: always
+    cpus: "0.50"
+    mem_limit: "128m"
+    pids_limit: 256
     environment:
       - EARNFM_TOKEN=${EARNFM_TOKEN}
     logging:
@@ -75,13 +83,15 @@ services:
         max-size: "5m"
         max-file: "1"
 
-  # Note: Grass, Uprock, PacketShare images are provisional and may need specific community builds
-  # Check documentation for latest stable images
-  
   grass:
-    image: mrdococ/grass-node
+    image: mrcolorrain/grass@sha256:73396d94758d0a5c4a78b3f268d33de3ff3e41a2525a9ba5b1584bfca0b71e4f
     container_name: grass
+    platform: ${GRASS_PLATFORM}
+    hostname: ${DEVICE_NAME:-Server}
     restart: always
+    cpus: "0.50"
+    mem_limit: "384m"
+    pids_limit: 512
     environment:
       - GRASS_USER=${GRASS_USER}
       - GRASS_PASS=${GRASS_PASS}
@@ -91,27 +101,102 @@ services:
         max-size: "5m"
         max-file: "1"
 
-  uprock:
-    image: uprock/uprock
-    container_name: uprock
+  packetshare:
+    image: packetshare/packetshare@sha256:52ddf3c71ce4eda7b49f700565b071a71731a57d2d67d3d2b4a446ea11f68235
+    container_name: packetshare
+    platform: ${PACKETSHARE_PLATFORM}
     restart: always
-    environment:
-      - UPROCK_TOKEN=${UPROCK_TOKEN}
+    cpus: "0.50"
+    mem_limit: "128m"
+    pids_limit: 256
+    command: -accept-tos -email=${PACKETSHARE_EMAIL} -password=${PACKETSHARE_PASSWORD}
     logging:
       driver: "json-file"
       options:
         max-size: "5m"
         max-file: "1"
 
-  packetshare:
-    image: packetshare/packetshare
-    container_name: packetshare
+  mysterium:
+    image: mysteriumnetwork/myst@sha256:419796b7a4bc8590df88f406e17bf0cd94dd10123cbf8105521018f505d07701
+    container_name: mysterium
+    platform: ${MYSTERIUM_PLATFORM}
     restart: always
-    environment:
-      - PACKETSHARE_EMAIL=${PACKETSHARE_EMAIL}
-      - PACKETSHARE_PASSWORD=${PACKETSHARE_PASSWORD}
+    cpus: "1.00"
+    mem_limit: "512m"
+    pids_limit: 512
+    command: service --agreed-terms-and-conditions
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - command -v wget >/dev/null 2>&1 && wget -q -O- http://127.0.0.1:4050/healthcheck >/dev/null 2>&1 && exit 0; command -v curl >/dev/null 2>&1 && curl -fsS http://127.0.0.1:4050/healthcheck >/dev/null 2>&1 && exit 0; exit 0
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    volumes:
+      - mysterium-data:/var/lib/mysterium-node
     logging:
       driver: "json-file"
       options:
         max-size: "5m"
         max-file: "1"
+
+  pawns:
+    image: iproyal/pawns-cli@sha256:20380eb15d39f20c5d5e1531cc31a7ca8e1c3a7e5b2a4b404351672b0b56b4bd
+    container_name: pawns
+    platform: ${PAWNS_PLATFORM}
+    restart: always
+    cpus: "0.50"
+    mem_limit: "128m"
+    pids_limit: 256
+    command: -email=${PAWNS_EMAIL} -password=${PAWNS_PASSWORD} -device-name=${DEVICE_NAME:-Server} -device-id=${DEVICE_NAME:-Server} -accept-tos
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  proxyrack:
+    image: proxyrack/pop@sha256:7de6719f37b31d5dd354f8cdd3ae601b4ed401832d0935ff460f968e0b6731bc
+    container_name: proxyrack
+    platform: ${PROXYRACK_PLATFORM}
+    restart: always
+    cpus: "0.50"
+    mem_limit: "128m"
+    pids_limit: 256
+    environment:
+      - UUID=${PROXYRACK_UUID}
+      - API_KEY=${PROXYRACK_API_KEY}
+      - DEVICE_NAME=${DEVICE_NAME:-Server}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  bitping:
+    image: bitping/bitpingd@sha256:344b8648a71ccf1430591d63fdfb4256663c74ab3b021176aff334a8b92e1b2a
+    container_name: bitping
+    platform: ${BITPING_PLATFORM}
+    restart: always
+    cpus: "0.50"
+    mem_limit: "192m"
+    pids_limit: 256
+    environment:
+      - BITPING_EMAIL=${BITPING_EMAIL}
+      - BITPING_PASSWORD=${BITPING_PASSWORD}
+      - BITPING_MFA=${BITPING_MFA}
+    volumes:
+      - bitpingd-data:/root/.bitpingd
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+volumes:
+  mysterium-data:
+  bitpingd-data:

@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+    h='192.168.1.18';u='orangepi';pw='orangepi';ssh=paramiko.SSHClient();ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy());ssh.connect(h,username=u,password=pw,timeout=20,auth_timeout=20,banner_timeout=20,look_for_keys=False,allow_agent=False);stdin,stdout,stderr=ssh.exec_command('echo ok');out=stdout.read().decode();err=stderr.read().decode();ssh.close();path.write_text(out+'\n'+err,encoding='utf-8')
+                                                                                                                                   ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\USER\AppData\Roaming\Python\Python314\site-packages\paramiko\client.py", line 457, in connect
+    server_key = t.get_remote_server_key()
+  File "C:\Users\USER\AppData\Roaming\Python\Python314\site-packages\paramiko\transport.py", line 953, in get_remote_server_key
+    raise SSHException("No existing session")
+paramiko.ssh_exception.SSHException: No existing session

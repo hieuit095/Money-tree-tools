@@ -1,0 +1,96 @@
+{
+  "compose_services": [
+    "antgain",
+    "bearshare",
+    "bearshare-pot",
+    "bitping",
+    "earnapp",
+    "earnfm",
+    "gaga-node",
+    "grass",
+    "honeygain",
+    "honeygain-pot",
+    "mysterium",
+    "network3",
+    "nodepay",
+    "packetshare",
+    "packetshare-pot",
+    "packetstream",
+    "pawns",
+    "peer2profit",
+    "proxybase",
+    "proxylite",
+    "proxyrack",
+    "repocket",
+    "speedshare",
+    "spide",
+    "traffmonetizer",
+    "watchtower-igm",
+    "wipter",
+    "wizardgain"
+  ],
+  "docker": {
+    "available": false,
+    "error": "DockerException(\"Error while fetching server API version: (2, 'CreateFile', 'The system cannot find the file specified.')\")"
+  },
+  "expected_compose_services": [
+    "bitping",
+    "earnfm",
+    "grass",
+    "honeygain",
+    "mysterium",
+    "packetshare",
+    "packetstream",
+    "pawns",
+    "proxyrack",
+    "repocket",
+    "traffmonetizer",
+    "wizardgain"
+  ],
+  "host": {
+    "hostname": "DESKTOP-2EPQPUP"
+  },
+  "igm_app_names": [
+    "ANTGAIN",
+    "BEARSHARE",
+    "BITPING",
+    "EARNAPP",
+    "EARNFM",
+    "GAGANODE",
+    "GRASS",
+    "HONEYGAIN",
+    "MYSTERIUM",
+    "NETWORK3",
+    "NODEPAY",
+    "PACKETSHARE",
+    "PACKETSTREAM",
+    "PAWNS",
+    "PEER2PROFIT",
+    "PROXYBASE",
+    "PROXYLITE",
+    "PROXYRACK",
+    "REPOCKET",
+    "SPEEDSHARE",
+    "SPIDE",
+    "TRAFFMONETIZER",
+    "WIPTER",
+    "WIZARDGAIN"
+  ],
+  "igm_apps_ok": true,
+  "inventory_ok": true,
+  "mysterium_health": {
+    "error": "URLError(ConnectionRefusedError(10061, 'No connection could be made because the target machine actively refused it', None, 10061, None))",
+    "ok": false
+  },
+  "native": {
+    "uprock": {
+      "installed": false,
+      "status": "systemctl_unavailable"
+    },
+    "wipter": {
+      "installed": false,
+      "status": "systemctl_unavailable"
+    }
+  },
+  "timestamp": 1769758308.5684104
+}

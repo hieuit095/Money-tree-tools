@@ -1,0 +1,402 @@
+[
+  {
+    "allow_amd64_emulation": false,
+    "image": "bitping/bitpingd@sha256:344b8648a71ccf1430591d63fdfb4256663c74ab3b021176aff334a8b92e1b2a",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "amd64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:344b8648a71ccf1430591d63fdfb4256663c74ab3b021176aff334a8b92e1b2a",
+    "repository": "bitping/bitpingd",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "earnfm/earnfm-client@sha256:96169b3cd1b5cf2fce74b24b72949037d9539eeceb70ecdbe6d8081839a5db32",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "amd64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v7"
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:96169b3cd1b5cf2fce74b24b72949037d9539eeceb70ecdbe6d8081839a5db32",
+    "repository": "earnfm/earnfm-client",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "honeygain/honeygain@sha256:159d120caac9f482074d3e8d82d4cc247cd07e65af37bcc8e6b89c60674d5ed4",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v7"
+      },
+      {
+        "arch": "arm64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "amd64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "386",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:159d120caac9f482074d3e8d82d4cc247cd07e65af37bcc8e6b89c60674d5ed4",
+    "repository": "honeygain/honeygain",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "iproyal/pawns-cli@sha256:20380eb15d39f20c5d5e1531cc31a7ca8e1c3a7e5b2a4b404351672b0b56b4bd",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "amd64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v7"
+      },
+      {
+        "arch": "arm64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v6"
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:20380eb15d39f20c5d5e1531cc31a7ca8e1c3a7e5b2a4b404351672b0b56b4bd",
+    "repository": "iproyal/pawns-cli",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "mrcolorrain/grass@sha256:73396d94758d0a5c4a78b3f268d33de3ff3e41a2525a9ba5b1584bfca0b71e4f",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "amd64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v7"
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:73396d94758d0a5c4a78b3f268d33de3ff3e41a2525a9ba5b1584bfca0b71e4f",
+    "repository": "mrcolorrain/grass",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "mysteriumnetwork/myst@sha256:419796b7a4bc8590df88f406e17bf0cd94dd10123cbf8105521018f505d07701",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "amd64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v7"
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:419796b7a4bc8590df88f406e17bf0cd94dd10123cbf8105521018f505d07701",
+    "repository": "mysteriumnetwork/myst",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "packetshare/packetshare@sha256:52ddf3c71ce4eda7b49f700565b071a71731a57d2d67d3d2b4a446ea11f68235",
+    "ok": false,
+    "platforms": [
+      {
+        "arch": "arm64",
+        "os": "linux",
+        "variant": "v8"
+      },
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v6"
+      },
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v7"
+      },
+      {
+        "arch": "386",
+        "os": "linux",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:52ddf3c71ce4eda7b49f700565b071a71731a57d2d67d3d2b4a446ea11f68235",
+    "repository": "packetshare/packetshare",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "packetstream/psclient@sha256:e5015592031fb6f3876582117f47995ecec8157a639e9fc3fcfe4af28b2c497a",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "386",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "amd64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v6"
+      },
+      {
+        "arch": "arm",
+        "os": "linux",
+        "variant": "v7"
+      },
+      {
+        "arch": "arm64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:e5015592031fb6f3876582117f47995ecec8157a639e9fc3fcfe4af28b2c497a",
+    "repository": "packetstream/psclient",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "proxyrack/pop@sha256:7de6719f37b31d5dd354f8cdd3ae601b4ed401832d0935ff460f968e0b6731bc",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:7de6719f37b31d5dd354f8cdd3ae601b4ed401832d0935ff460f968e0b6731bc",
+    "repository": "proxyrack/pop",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "repocket/repocket@sha256:5888d756de7e0e74b95b5eb08bb93f4240a0ce840c910a7e528d1143ad0c502b",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "amd64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "arm64",
+        "os": "linux",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      },
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:5888d756de7e0e74b95b5eb08bb93f4240a0ce840c910a7e528d1143ad0c502b",
+    "repository": "repocket/repocket",
+    "target_arch": "amd64"
+  },
+  {
+    "allow_amd64_emulation": false,
+    "image": "traffmonetizer/cli_v2@sha256:bccfab5e2230534701119b89d6e8cf531f99fabd3c8b2a3b3ee03954c9c9ff69",
+    "ok": true,
+    "platforms": [
+      {
+        "arch": "unknown",
+        "os": "unknown",
+        "variant": ""
+      }
+    ],
+    "reference": "sha256:bccfab5e2230534701119b89d6e8cf531f99fabd3c8b2a3b3ee03954c9c9ff69",
+    "repository": "traffmonetizer/cli_v2",
+    "target_arch": "amd64"
+  }
+]

@@ -14,6 +14,8 @@ from concurrent.futures import ThreadPoolExecutor
 from tabulate import tabulate
 
 import tarfile
+from cryptography.fernet import Fernet
+from typing import Any, Dict, Iterable, Tuple
 
 # Load Inventory
 def load_inventory(file_path="inventory.yaml"):
@@ -21,12 +23,48 @@ def load_inventory(file_path="inventory.yaml"):
         return yaml.safe_load(f)
 
 def create_deploy_package(output_filename="deploy_package.tar.gz"):
-    local_files = ["app", "scripts", "docker-compose.yml", "requirements.txt", "setup.sh", "income-manager.service"]
+    local_files = [
+        "app",
+        "scripts",
+        "third_party/income-generator",
+        "docker-compose.yml",
+        "requirements.txt",
+        "setup.sh",
+        "income-manager.service",
+    ]
     with tarfile.open(output_filename, "w:gz") as tar:
         for item in local_files:
             if os.path.exists(item):
                 tar.add(item, arcname=item)
     return output_filename
+
+def _to_env_var_name(key: str) -> str:
+    key = key.strip()
+    if not key:
+        return key
+    if all(c.isupper() or c.isdigit() or c == "_" for c in key) and "_" in key:
+        return key
+    return key.upper().replace("-", "_").replace(" ", "_")
+
+
+def _iter_env_items(source: Dict[str, Any]) -> Iterable[Tuple[str, Any]]:
+    for k, v in source.items():
+        if v is None:
+            continue
+        yield _to_env_var_name(str(k)), v
+
+
+def _resolve_profile(inventory: Dict[str, Any], device: Dict[str, Any]) -> Dict[str, Any]:
+    profile = device.get("profile")
+    if isinstance(profile, dict):
+        return profile
+    if isinstance(profile, str) and profile:
+        profiles = inventory.get("profiles", {})
+        if isinstance(profiles, dict):
+            resolved = profiles.get(profile, {})
+            if isinstance(resolved, dict):
+                return resolved
+    return {}
 
 # Deployment Task for a Single Device
 def deploy_device(device):
@@ -42,7 +80,17 @@ def deploy_device(device):
         # Explicitly set sudo password in config to ensure escalation works
         from fabric import Config
         config = Config(overrides={'sudo': {'password': password}})
-        conn = Connection(host=ip, user=user, connect_kwargs={"password": password}, config=config)
+        conn = Connection(
+            host=ip,
+            user=user,
+            connect_kwargs={
+                "password": password,
+                "banner_timeout": 60,
+                "auth_timeout": 60,
+                "timeout": 60,
+            },
+            config=config
+        )
         
         # 1. Check Disk Space (Require > 1GB)
         print(f"[{box_id}] Checking disk space...", flush=True)
@@ -66,14 +114,6 @@ def deploy_device(device):
         conn.sudo(f"hostnamectl set-hostname {hostname}")
         
         # Update hosts file to prevent sudo warnings
-        # Using separate command for sed with sudo explicitly on the sed command if the complex chain fails
-        # The issue "sed: couldn't open temporary file /etc/sedehpQkz: Permission denied" means sed itself wasn't running as root effectively in the pipe/chain or context.
-        # But we used conn.sudo(...) which wraps the whole string.
-        # "grep || sed" -> sudo (grep || sed). 
-        # If grep fails (returns 1), sed runs.
-        # The error suggests sed didn't have write perm to /etc. 
-        # Sometimes || operators in sudo strings are tricky with shell parsing.
-        # Let's break it down.
         try:
              conn.sudo(f"grep -q '127.0.1.1 {hostname}' /etc/hosts")
         except Exception:
@@ -99,29 +139,8 @@ def deploy_device(device):
         conn.sudo("mv /tmp/moneytree.service /etc/avahi/services/moneytree.service")
         conn.sudo("systemctl restart avahi-daemon")
 
-        # 3. System Optimization
-        print(f"[{box_id}] Optimizing System (Swap/ZRAM)...", flush=True)
-        # Check swap
-        swap_check = conn.run("swapon --show", hide=True)
-        if "/swapfile" not in swap_check.stdout:
-            conn.sudo("fallocate -l 1G /swapfile")
-            conn.sudo("chmod 600 /swapfile")
-            conn.sudo("mkswap /swapfile")
-            conn.sudo("swapon /swapfile")
-            try:
-                conn.sudo("grep -q '/swapfile' /etc/fstab")
-            except:
-                conn.sudo("bash -c \"echo '/swapfile none swap sw 0 0' >> /etc/fstab\"")
-        
-        # ZRAM (simple method)
-        conn.sudo("DEBIAN_FRONTEND=noninteractive apt-get install -y zram-config -qq || true")
-        
-        # Swappiness
-        conn.sudo("sysctl vm.swappiness=10")
-        try:
-            conn.sudo("grep -q 'vm.swappiness=10' /etc/sysctl.conf")
-        except:
-            conn.sudo("bash -c \"echo 'vm.swappiness=10' >> /etc/sysctl.conf\"")
+        # 3. System Optimization (Docker logging)
+        print(f"[{box_id}] Configuring Docker logging limits...", flush=True)
         
         # Docker Log Limit (Global Daemon Config)
         daemon_json = """
@@ -137,31 +156,34 @@ def deploy_device(device):
         conn.sudo("mkdir -p /etc/docker")
         conn.sudo("mv /tmp/daemon.json /etc/docker/daemon.json")
         # Restart docker to apply logging config (if installed, else next step installs it)
-        conn.sudo("systemctl restart docker || true")
+        # conn.sudo("systemctl restart docker || true")
+        print(f"[{box_id}] Docker config updated.", flush=True)
 
         # 4. Deploy Source Code
         print(f"[{box_id}] Deploying Codebase...", flush=True)
         remote_dir = "/opt/moneytree"
+        
+        # Clean Install: Stop containers and remove directory
+        print(f"[{box_id}] Cleaning up old installation...", flush=True)
+        conn.sudo("bash -c 'systemctl stop income-manager.service moneytree-zram.service docker-binfmt.service 2>/dev/null || true'", warn=True)
+        conn.sudo("bash -c 'systemctl disable income-manager.service moneytree-zram.service docker-binfmt.service 2>/dev/null || true'", warn=True)
+        conn.sudo("bash -c 'rm -f /etc/systemd/system/income-manager.service /etc/systemd/system/moneytree-zram.service /etc/systemd/system/docker-binfmt.service 2>/dev/null || true'", warn=True)
+        conn.sudo("bash -c 'rm -rf /etc/moneytree 2>/dev/null || true'", warn=True)
+        conn.sudo("bash -c 'systemctl daemon-reload 2>/dev/null || true'", warn=True)
+
+        legacy_dirs = [
+            remote_dir,
+            f"/home/{user}/Money-tree-tools",
+            f"/home/{user}/money-tree-tools",
+            f"/home/{user}/moneytree-tools",
+        ]
+        for d in legacy_dirs:
+            conn.sudo(f"bash -c 'if [ -d \"{d}\" ]; then cd \"{d}\" && docker compose down || true; fi'", warn=True)
+            conn.sudo(f"rm -rf \"{d}\"", warn=True)
+        
         conn.sudo(f"mkdir -p {remote_dir}")
         conn.sudo(f"chown -R {user}:{user} {remote_dir}")
         
-        # Backup existing configuration and crucial files
-        print(f"[{box_id}] Checking for existing configuration to backup...", flush=True)
-        backup_timestamp = int(time.time())
-        files_to_backup = [".env", "docker-compose.yml"]
-        
-        for fname in files_to_backup:
-            try:
-                # Check if file exists
-                conn.run(f"test -f {remote_dir}/{fname}")
-                # Create backup
-                backup_name = f"{fname}.backup.{backup_timestamp}"
-                conn.run(f"cp {remote_dir}/{fname} {remote_dir}/{backup_name}")
-                print(f"[{box_id}] Backup created: {backup_name}", flush=True)
-            except:
-                # File doesn't exist, skip
-                pass
-
         if os.path.exists("deploy_package.tar.gz"):
              conn.put("deploy_package.tar.gz", remote_dir)
              # Extract
@@ -171,28 +193,54 @@ def deploy_device(device):
         else:
              print(f"[{box_id}] Warning: deploy_package.tar.gz not found!")
 
-        # Create .env file only if it doesn't exist to preserve configuration
+        # Configure environment (Always overwrite for clean install)
         print(f"[{box_id}] Configuring environment...", flush=True)
-        try:
-            conn.run(f"test -f {remote_dir}/.env")
-            print(f"[{box_id}] Existing .env found, preserving configuration.", flush=True)
-        except:
-            print(f"[{box_id}] No .env found, creating with defaults.", flush=True)
-            env_content = f"DEVICE_NAME={box_id}\nWEB_USERNAME=admin\nWEB_PASSWORD=admin\n"
-            conn.run(f"echo '{env_content}' > {remote_dir}/.env")
+        
+        # Base config
+        env_content = f"DEVICE_NAME={box_id}\nWEB_USERNAME={user}\nWEB_PASSWORD={password}\n"
+        
+        inventory = load_inventory()
+
+        exclude_keys = {"ip", "user", "pass", "box_id", "profile", "env"}
+        resolved_profile = _resolve_profile(inventory, device)
+
+        env_items: Dict[str, Any] = {}
+        for k, v in _iter_env_items(resolved_profile):
+            env_items[k] = v
+        for item_key, value in device.items():
+            if item_key not in exclude_keys:
+                k = _to_env_var_name(str(item_key))
+                env_items[k] = value
+        explicit_env = device.get("env", {})
+        if isinstance(explicit_env, dict):
+            for k, v in _iter_env_items(explicit_env):
+                env_items[k] = v
+
+        for env_var, value in sorted(env_items.items()):
+            env_content += f"{env_var}={value}\n"
+        
+        master_key = Fernet.generate_key()
+        token = Fernet(master_key).encrypt(env_content.encode("utf-8")).decode("utf-8")
+        master_key_str = master_key.decode("utf-8")
+
+        conn.sudo("mkdir -p /etc/moneytree")
+        conn.sudo("chmod 700 /etc/moneytree")
+        conn.sudo(f"bash -c 'umask 077; printf %s\\\\n \"{master_key_str}\" > /etc/moneytree/master.key'")
+        conn.run(f"bash -c 'umask 077; printf %s\\\\n \"{token}\" > {remote_dir}/.env.enc'")
 
         # 5. Activation
         print(f"[{box_id}] Installing Dependencies & Starting...", flush=True)
         conn.run(f"chmod +x {remote_dir}/setup.sh")
         
-        # Correctly change directory then run as sudo
-        # Using bash -c to handle cd and execution in one go under sudo
-        # conn.sudo("cd ...") fails because cd is a shell builtin.
-        # Fabric's context manager `with conn.cd(...)` works for `run` but `sudo` might reset environment depending on config.
-        # Safest way: sudo bash -c "cd /path && ./script"
+        # Execute setup.sh separately
+        setup_cmd = f"cd {remote_dir} && ./setup.sh"
+        print(f"[{box_id}] Running setup script...", flush=True)
+        conn.sudo(f"bash -c '{setup_cmd}'", pty=True)
         
-        start_cmd = f"cd {remote_dir} && ./setup.sh && docker compose up -d"
-        conn.sudo(f"bash -c '{start_cmd}'", pty=True)
+        # Execute docker compose separately
+        compose_cmd = f"cd {remote_dir} && docker compose up -d"
+        print(f"[{box_id}] Starting containers...", flush=True)
+        conn.sudo(f"bash -c '{compose_cmd}'", pty=True)
 
         return {"box_id": box_id, "ip": ip, "status": "Success", "url": f"http://{hostname}.local:5000"}
 
@@ -222,6 +270,17 @@ def main():
         
         for future in futures:
             results.append(future.result())
+    
+    # Sequential Deployment for Debugging
+    # for dev in devices:
+    #     print(f"Deploying to {dev['box_id']}...", flush=True)
+    #     try:
+    #         res = deploy_device(dev)
+    #         results.append(res)
+    #     except Exception as e:
+    #         import traceback
+    #         traceback.print_exc()
+    #         results.append({"box_id": dev['box_id'], "ip": dev['ip'], "status": "Failed", "msg": str(e)})
 
     # Print Report
     print("\n" + "="*60, flush=True)

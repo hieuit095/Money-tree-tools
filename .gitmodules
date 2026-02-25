@@ -1,0 +1,3 @@
+[submodule "third_party/income-generator"]
+	path = third_party/income-generator
+	url = https://github.com/XternA/income-generator

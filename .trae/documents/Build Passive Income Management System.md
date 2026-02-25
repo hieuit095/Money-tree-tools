@@ -11,7 +11,7 @@ Money-tree-tools/
 │   ├── main.py              # Flask Application Entry Point
 │   ├── system_monitor.py    # psutil wrapper for CPU/RAM/Net/Temp
 │   ├── docker_manager.py    # docker-py wrapper & compose handling
-│   ├── config_manager.py    # .env file handler
+│   ├── config_manager.py    # .env.enc file handler
 │   └── templates/
 │       └── dashboard.html   # Main Dashboard UI
 ├── scripts/
@@ -32,10 +32,10 @@ Create `scripts/optimize.py` to perform the following (requires root):
 *   **Sysctl:** Set `vm.swappiness=10` in `/etc/sysctl.conf` and apply live.
 
 ### Phase 2: Docker Composition & Configuration (Task 2)
-*   **`docker-compose.yml`:** Define services (EarnApp, Honeygain, Grass, TraffMonetizer, Uprock, Earn.fm, PacketStream, Repocket, PacketShare).
-    *   Use environment variables (e.g., `${EARNAPP_ID}`) for user inputs.
+*   **`docker-compose.yml`:** Define services (Honeygain, TraffMonetizer, Earn.fm, PacketStream, Repocket).
+    *   Use environment variables (e.g., `${HONEYGAIN_EMAIL}`) for user inputs.
     *   Configure logging: `driver: "json-file", options: { "max-size": "5m", "max-file": "1" }`.
-*   **`app/config_manager.py`:** Functions to read existing `.env` and write new values from the Web UI form.
+*   **`app/config_manager.py`:** Functions to read/write encrypted configuration (`.env.enc`) from the Web UI form.
 
 ### Phase 3: Backend & Monitor (Task 3 & Core)
 *   **`app/system_monitor.py`:**

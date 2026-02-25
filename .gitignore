@@ -1,0 +1,8 @@
+.env
+.env.enc
+.secrets/
+__pycache__/
+**/__pycache__/
+*.pyc
+deploy_package.tar.gz
+moneytree.*.env

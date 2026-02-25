@@ -1,0 +1,79 @@
+[
+  {
+    "digest": "sha256:344b8648a71ccf1430591d63fdfb4256663c74ab3b021176aff334a8b92e1b2a",
+    "input_ref": "bitping/bitpingd@sha256:344b8648a71ccf1430591d63fdfb4256663c74ab3b021176aff334a8b92e1b2a",
+    "pinned_ref": "bitping/bitpingd@sha256:344b8648a71ccf1430591d63fdfb4256663c74ab3b021176aff334a8b92e1b2a",
+    "reference": "digest",
+    "repository": "bitping/bitpingd"
+  },
+  {
+    "digest": "sha256:96169b3cd1b5cf2fce74b24b72949037d9539eeceb70ecdbe6d8081839a5db32",
+    "input_ref": "earnfm/earnfm-client@sha256:96169b3cd1b5cf2fce74b24b72949037d9539eeceb70ecdbe6d8081839a5db32",
+    "pinned_ref": "earnfm/earnfm-client@sha256:96169b3cd1b5cf2fce74b24b72949037d9539eeceb70ecdbe6d8081839a5db32",
+    "reference": "digest",
+    "repository": "earnfm/earnfm-client"
+  },
+  {
+    "digest": "sha256:159d120caac9f482074d3e8d82d4cc247cd07e65af37bcc8e6b89c60674d5ed4",
+    "input_ref": "honeygain/honeygain@sha256:159d120caac9f482074d3e8d82d4cc247cd07e65af37bcc8e6b89c60674d5ed4",
+    "pinned_ref": "honeygain/honeygain@sha256:159d120caac9f482074d3e8d82d4cc247cd07e65af37bcc8e6b89c60674d5ed4",
+    "reference": "digest",
+    "repository": "honeygain/honeygain"
+  },
+  {
+    "digest": "sha256:20380eb15d39f20c5d5e1531cc31a7ca8e1c3a7e5b2a4b404351672b0b56b4bd",
+    "input_ref": "iproyal/pawns-cli@sha256:20380eb15d39f20c5d5e1531cc31a7ca8e1c3a7e5b2a4b404351672b0b56b4bd",
+    "pinned_ref": "iproyal/pawns-cli@sha256:20380eb15d39f20c5d5e1531cc31a7ca8e1c3a7e5b2a4b404351672b0b56b4bd",
+    "reference": "digest",
+    "repository": "iproyal/pawns-cli"
+  },
+  {
+    "digest": "sha256:73396d94758d0a5c4a78b3f268d33de3ff3e41a2525a9ba5b1584bfca0b71e4f",
+    "input_ref": "mrcolorrain/grass@sha256:73396d94758d0a5c4a78b3f268d33de3ff3e41a2525a9ba5b1584bfca0b71e4f",
+    "pinned_ref": "mrcolorrain/grass@sha256:73396d94758d0a5c4a78b3f268d33de3ff3e41a2525a9ba5b1584bfca0b71e4f",
+    "reference": "digest",
+    "repository": "mrcolorrain/grass"
+  },
+  {
+    "digest": "sha256:419796b7a4bc8590df88f406e17bf0cd94dd10123cbf8105521018f505d07701",
+    "input_ref": "mysteriumnetwork/myst@sha256:419796b7a4bc8590df88f406e17bf0cd94dd10123cbf8105521018f505d07701",
+    "pinned_ref": "mysteriumnetwork/myst@sha256:419796b7a4bc8590df88f406e17bf0cd94dd10123cbf8105521018f505d07701",
+    "reference": "digest",
+    "repository": "mysteriumnetwork/myst"
+  },
+  {
+    "digest": "sha256:52ddf3c71ce4eda7b49f700565b071a71731a57d2d67d3d2b4a446ea11f68235",
+    "input_ref": "packetshare/packetshare@sha256:52ddf3c71ce4eda7b49f700565b071a71731a57d2d67d3d2b4a446ea11f68235",
+    "pinned_ref": "packetshare/packetshare@sha256:52ddf3c71ce4eda7b49f700565b071a71731a57d2d67d3d2b4a446ea11f68235",
+    "reference": "digest",
+    "repository": "packetshare/packetshare"
+  },
+  {
+    "digest": "sha256:e5015592031fb6f3876582117f47995ecec8157a639e9fc3fcfe4af28b2c497a",
+    "input_ref": "packetstream/psclient@sha256:e5015592031fb6f3876582117f47995ecec8157a639e9fc3fcfe4af28b2c497a",
+    "pinned_ref": "packetstream/psclient@sha256:e5015592031fb6f3876582117f47995ecec8157a639e9fc3fcfe4af28b2c497a",
+    "reference": "digest",
+    "repository": "packetstream/psclient"
+  },
+  {
+    "digest": "sha256:7de6719f37b31d5dd354f8cdd3ae601b4ed401832d0935ff460f968e0b6731bc",
+    "input_ref": "proxyrack/pop@sha256:7de6719f37b31d5dd354f8cdd3ae601b4ed401832d0935ff460f968e0b6731bc",
+    "pinned_ref": "proxyrack/pop@sha256:7de6719f37b31d5dd354f8cdd3ae601b4ed401832d0935ff460f968e0b6731bc",
+    "reference": "digest",
+    "repository": "proxyrack/pop"
+  },
+  {
+    "digest": "sha256:5888d756de7e0e74b95b5eb08bb93f4240a0ce840c910a7e528d1143ad0c502b",
+    "input_ref": "repocket/repocket@sha256:5888d756de7e0e74b95b5eb08bb93f4240a0ce840c910a7e528d1143ad0c502b",
+    "pinned_ref": "repocket/repocket@sha256:5888d756de7e0e74b95b5eb08bb93f4240a0ce840c910a7e528d1143ad0c502b",
+    "reference": "digest",
+    "repository": "repocket/repocket"
+  },
+  {
+    "digest": "sha256:bccfab5e2230534701119b89d6e8cf531f99fabd3c8b2a3b3ee03954c9c9ff69",
+    "input_ref": "traffmonetizer/cli_v2@sha256:bccfab5e2230534701119b89d6e8cf531f99fabd3c8b2a3b3ee03954c9c9ff69",
+    "pinned_ref": "traffmonetizer/cli_v2@sha256:bccfab5e2230534701119b89d6e8cf531f99fabd3c8b2a3b3ee03954c9c9ff69",
+    "reference": "digest",
+    "repository": "traffmonetizer/cli_v2"
+  }
+]

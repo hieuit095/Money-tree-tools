@@ -1,0 +1,2 @@
+-rw-r--r-- 1 root root 1764 Feb  2 04:20 /opt/moneytree/.env.enc
+
