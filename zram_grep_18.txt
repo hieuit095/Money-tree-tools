@@ -1,4 +1,0 @@
-158:                "status": "pending_reboot",
-166:                return {"status": "pending_reboot", "size_mb": desired_mb, "swapoff_killed": True}
-
-[sudo] password for orangepi: 

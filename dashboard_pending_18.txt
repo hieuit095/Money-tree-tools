@@ -1,3 +1,0 @@
-530:                                if (result.status === 'pending_reboot') {
-
-[sudo] password for orangepi: 

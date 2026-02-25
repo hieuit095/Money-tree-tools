@@ -1,2 +1,0 @@
-34046 bash -c pgrep -fa setup.sh || echo NO_SETUP
-

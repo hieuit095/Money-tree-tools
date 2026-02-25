@@ -1,3 +1,0 @@
-status 200
-has_0g_label False
-
