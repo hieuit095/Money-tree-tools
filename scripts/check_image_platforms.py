@@ -7,20 +7,7 @@ import urllib.request
 
 import yaml
 
-import platform
-
-
-def normalize_arch(machine: str | None = None) -> str:
-    m = (machine or platform.machine() or "").lower()
-    if m in {"x86_64", "amd64"}:
-        return "amd64"
-    if m in {"aarch64", "arm64"}:
-        return "arm64"
-    if m in {"armv7l", "armv7"}:
-        return "armv7"
-    if m in {"armv6l", "armv6"}:
-        return "armv6"
-    return m or "unknown"
+from app.platform_info import normalize_arch
 
 
 DOCKER_HUB_REGISTRY = "registry-1.docker.io"
@@ -176,6 +163,23 @@ def main() -> int:
     os.makedirs(reports_dir, exist_ok=True)
     out_path = os.path.join(reports_dir, "image-platforms.json")
     open(out_path, "w", encoding="utf-8", newline="\n").write(json.dumps(results, indent=2, sort_keys=True))
+
+    print(f"\nPlatform Compatibility Report (target: {target_arch})")
+    print("=" * 60)
+    for r in results:
+        status = "OK" if r.get("ok") else "FAIL"
+        image = r.get("image", "unknown")
+        note = r.get("note") or r.get("error") or ""
+        line = f"[{status}] {image}"
+        if note:
+            line += f"  ({note})"
+        print(line)
+
+    if failures:
+        print(f"\n{len(failures)} image(s) incompatible with {target_arch}.")
+    else:
+        print(f"\nAll {len(results)} images compatible with {target_arch}.")
+
     return 0 if not failures else 1
 
 

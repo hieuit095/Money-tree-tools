@@ -206,39 +206,6 @@ def control_container(service_name, action):
     except Exception as e:
         return False, str(e)
 
-    if action in {"start", "restart"}:
-        try:
-            stale = _get_target()
-            stale.remove(force=True)
-        except Exception:
-            pass
-
-    config = load_config()
-    env = build_igm_env(config)
-    spec = IGM_SERVICES.get(service_name)
-    if spec:
-        env[spec.profile_var] = "ENABLED"
-    env_file = write_igm_temp_env_file(env)
-    try:
-        if action == "start":
-            result = _docker_compose(["up", "-d", "--force-recreate", service_name], env_file=env_file)
-            if result.returncode == 0:
-                return True, "Success"
-            return False, (result.stderr or result.stdout or "").strip() or "Failed to deploy container"
-        if action == "stop":
-            result = _docker_compose(["stop", service_name], env_file=env_file)
-            if result.returncode == 0:
-                return True, "Success"
-            msg = (result.stderr or result.stdout or "").strip()
-            return True, msg or "Not running"
-        result = _docker_compose(["restart", service_name], env_file=env_file)
-        if result.returncode == 0:
-            return True, "Success"
-        return False, (result.stderr or result.stdout or "").strip() or "Failed to restart container"
-    finally:
-        if os.path.exists(env_file):
-            os.remove(env_file)
-
 def stop_all():
     cli = get_client()
     if not cli:

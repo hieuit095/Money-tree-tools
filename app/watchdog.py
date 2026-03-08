@@ -104,6 +104,25 @@ def check_and_recover():
         else:
             logger.error(f"Failed to stop service 'uprock': {msg}")
 
+    # 4. Check Pingpong
+    from app.native_manager import control_pingpong, get_pingpong_details
+    should_be_running = config.get("ENABLE_PINGPONG", "false").lower() == "true"
+    pingpong_status = get_pingpong_details()["status"]
+    if should_be_running and pingpong_status != "running" and "pingpong" not in paused:
+        logger.warning(f"Service 'pingpong' should be running but is '{pingpong_status}'. Attempting recovery...")
+        success, msg = control_pingpong("start")
+        if success:
+            logger.info("Successfully recovered service 'pingpong'.")
+        else:
+            logger.error(f"Failed to recover service 'pingpong': {msg}")
+    if not should_be_running and pingpong_status == "running":
+        logger.warning("Service 'pingpong' is running but is configured disabled. Stopping...")
+        success, msg = control_pingpong("stop")
+        if success:
+            logger.info("Successfully stopped service 'pingpong'.")
+        else:
+            logger.error(f"Failed to stop service 'pingpong': {msg}")
+
     logger.info("Watchdog cycle completed.")
 
 def watchdog_loop(interval=300):

@@ -19,12 +19,15 @@ def _load_env_text() -> str:
     env_enc_path = os.path.join(config_root(), ".env.enc")
     env_plain_path = os.path.join(config_root(), ".env")
     if os.path.exists(env_enc_path):
-        token = open(env_enc_path, "rb").read()
+        with open(env_enc_path, "rb") as f:
+            token = f.read()
         plaintext = decrypt(token)
         return plaintext.decode("utf-8")
     if os.path.exists(env_plain_path):
-        plaintext_text = open(env_plain_path, "r", encoding="utf-8").read()
-        open(env_enc_path, "wb").write(encrypt(plaintext_text.encode("utf-8")))
+        with open(env_plain_path, "r", encoding="utf-8") as f:
+            plaintext_text = f.read()
+        with open(env_enc_path, "wb") as f:
+            f.write(encrypt(plaintext_text.encode("utf-8")))
         os.remove(env_plain_path)
         return plaintext_text
     return ""
@@ -112,7 +115,8 @@ def save_config(data):
             merged[key] = str(value)
             os.environ[key] = str(value)
     env_text = _serialize_env(merged)
-    open(os.path.join(config_root(), ".env.enc"), "wb").write(encrypt(env_text.encode("utf-8")))
+    with open(os.path.join(config_root(), ".env.enc"), "wb") as f:
+        f.write(encrypt(env_text.encode("utf-8")))
 
 
 def create_temp_env_file() -> str:

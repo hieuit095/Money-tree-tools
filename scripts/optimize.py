@@ -6,10 +6,12 @@ ALLOWED_ZRAM_SIZES_MB = [512, 1024, 1536, 2048, 3072, 4096]
 
 def run_command(command):
     try:
-        subprocess.run(command, shell=True, check=True)
-        print(f"Success: {command}")
+        if isinstance(command, str):
+            command = command.split()
+        subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print(f"Success: {' '.join(command)}")
     except subprocess.CalledProcessError as e:
-        print(f"Error running {command}: {e}")
+        print(f"Error running {' '.join(command)}: {e}")
 
 def _read_text(path: str) -> str:
     try:
@@ -17,6 +19,11 @@ def _read_text(path: str) -> str:
             return f.read()
     except OSError:
         return ""
+
+
+def _write_text(path: str, value: str) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(value)
 
 
 def _has_swap_device(prefix: str) -> bool:
@@ -61,7 +68,7 @@ def _remove_swapfile_from_fstab() -> None:
 
 def cleanup_swapfile_if_present() -> None:
     if _has_swap_path("/swapfile"):
-        run_command("swapoff /swapfile")
+        run_command(["swapoff", "/swapfile"])
     if os.path.exists("/swapfile"):
         try:
             os.remove("/swapfile")
@@ -112,10 +119,10 @@ def setup_swap(zram_active: bool):
         print("Swap file already exists.")
         return True
     else:
-        run_command("fallocate -l 1G /swapfile")
-        run_command("chmod 600 /swapfile")
-        run_command("mkswap /swapfile")
-        run_command("swapon /swapfile")
+        run_command(["fallocate", "-l", "1G", "/swapfile"])
+        run_command(["chmod", "600", "/swapfile"])
+        run_command(["mkswap", "/swapfile"])
+        run_command(["swapon", "/swapfile"])
         
         # Add to fstab
         try:
@@ -129,7 +136,7 @@ def setup_swap(zram_active: bool):
 def setup_zram():
     print("Configuring ZRAM...")
     try:
-        run_command("modprobe zram num_devices=1")
+        run_command(["modprobe", "zram", "num_devices=1"])
         
         if os.path.exists('/sys/block/zram0'):
             alg_path = "/sys/block/zram0/comp_algorithm"
@@ -137,10 +144,10 @@ def setup_zram():
                 available = _read_text(alg_path)
                 # Prefer zstd for better compression on low-RAM devices, then lz4
                 if "zstd" in available:
-                    run_command("echo zstd > /sys/block/zram0/comp_algorithm")
+                    _write_text(alg_path, "zstd")
                     print("Selected compression: zstd")
                 elif "lz4" in available:
-                    run_command("echo lz4 > /sys/block/zram0/comp_algorithm")
+                    _write_text(alg_path, "lz4")
                     print("Selected compression: lz4")
             desired = _desired_zram_size_bytes()
             current = _zram_disksize_bytes()
@@ -149,12 +156,12 @@ def setup_zram():
                 cleanup_swapfile_if_present()
                 return True
             if _has_swap_device("zram"):
-                run_command("swapoff /dev/zram0")
+                run_command(["swapoff", "/dev/zram0"])
             if os.path.exists("/sys/block/zram0/reset"):
-                run_command("echo 1 > /sys/block/zram0/reset")
-            run_command(f"echo {desired} > /sys/block/zram0/disksize")
-            run_command("mkswap /dev/zram0")
-            run_command("swapon -p 100 /dev/zram0") # Higher priority than disk swap
+                _write_text("/sys/block/zram0/reset", "1")
+            _write_text("/sys/block/zram0/disksize", str(desired))
+            run_command(["mkswap", "/dev/zram0"])
+            run_command(["swapon", "-p", "100", "/dev/zram0"]) # Higher priority than disk swap
             print(f"ZRAM configured on /dev/zram0 ({int(desired/1024/1024)} MB)")
             cleanup_swapfile_if_present()
             return True
@@ -169,7 +176,7 @@ def setup_swappiness():
     # For ZRAM, high swappiness (60-100) is preferred to aggressively use the compressed RAM
     # This frees up actual RAM for application caches and heap
     target_swappiness = 100
-    run_command(f"sysctl vm.swappiness={target_swappiness}")
+    run_command(["sysctl", f"vm.swappiness={target_swappiness}"])
     
     conf_path = "/etc/sysctl.d/99-moneytree.conf"
     content = _read_text(conf_path)
@@ -185,6 +192,85 @@ def setup_swappiness():
     except Exception as e:
         print(f"Failed to write to {conf_path}: {e}")
 
+
+def setup_armbian_optimizations():
+    """Apply tuning specific to Armbian/ARM TV boxes (Amlogic, Rockchip, Allwinner)."""
+    print("Checking for ARM/Armbian-specific optimizations...")
+
+    try:
+        from app.platform_info import get_platform_info, is_arm, is_armbian
+        info = get_platform_info()
+    except Exception:
+        print("Could not load platform_info; skipping ARM optimizations.")
+        return
+
+    if not is_arm(info):
+        print(f"Not an ARM platform ({info.arch}); skipping ARM optimizations.")
+        return
+
+    print(f"ARM platform detected: {info.machine} ({info.arch})")
+    if is_armbian(info):
+        print(f"Armbian detected: {info.os_name} {info.os_version}")
+
+    # 1. eMMC/SD-friendly I/O tuning (reduce write amplification on flash storage)
+    sysctl_path = "/etc/sysctl.d/99-moneytree.conf"
+    sysctl_content = _read_text(sysctl_path)
+    arm_tuning = {
+        "vm.dirty_ratio": "10",
+        "vm.dirty_background_ratio": "5",
+        "vm.min_free_kbytes": "8192",
+    }
+    added = False
+    for key, value in arm_tuning.items():
+        setting = f"{key}={value}"
+        if setting.replace(" ", "") not in sysctl_content.replace(" ", ""):
+            try:
+                with open(sysctl_path, "a", encoding="utf-8") as f:
+                    f.write(f"{setting}\n")
+                run_command(["sysctl", setting])
+                print(f"Applied: {setting}")
+                added = True
+            except Exception as e:
+                print(f"Failed to apply {setting}: {e}")
+    if not added:
+        print("ARM sysctl tuning already applied.")
+
+    # 2. I/O scheduler: prefer mq-deadline for flash storage (eMMC/SD)
+    for block_dev in ["mmcblk0", "mmcblk1", "mmcblk2"]:
+        sched_path = f"/sys/block/{block_dev}/queue/scheduler"
+        if os.path.exists(sched_path):
+            available = _read_text(sched_path)
+            if "mq-deadline" in available and "[mq-deadline]" not in available:
+                try:
+                    _write_text(sched_path, "mq-deadline")
+                    print(f"Set I/O scheduler for {block_dev} to mq-deadline")
+                except Exception as e:
+                    print(f"Failed to set scheduler for {block_dev}: {e}")
+            elif "[mq-deadline]" in available:
+                print(f"I/O scheduler for {block_dev} already mq-deadline")
+
+    # 3. CPU frequency governor: prefer schedutil for ARM SoCs
+    policy_dir = "/sys/devices/system/cpu/cpufreq"
+    if os.path.isdir(policy_dir):
+        for entry in os.listdir(policy_dir):
+            gov_path = os.path.join(policy_dir, entry, "scaling_governor")
+            if os.path.exists(gov_path):
+                current = _read_text(gov_path).strip()
+                available_path = os.path.join(policy_dir, entry, "scaling_available_governors")
+                available = _read_text(available_path)
+                preferred = "schedutil" if "schedutil" in available else ("ondemand" if "ondemand" in available else "")
+                if preferred and current != preferred:
+                    try:
+                        _write_text(gov_path, preferred)
+                        print(f"Set CPU governor for {entry} to {preferred} (was {current})")
+                    except Exception as e:
+                        print(f"Failed to set governor for {entry}: {e}")
+                elif current == preferred:
+                    print(f"CPU governor for {entry} already {preferred}")
+
+    print("ARM/Armbian optimizations complete.")
+
+
 if __name__ == "__main__":
     if os.name != 'posix':
         print("This script is intended for Linux systems.")
@@ -195,4 +281,6 @@ if __name__ == "__main__":
     zram_active = setup_zram()
     setup_swap(zram_active)
     setup_swappiness()
+    setup_armbian_optimizations()
     print("System optimization complete.")
+

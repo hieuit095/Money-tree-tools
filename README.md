@@ -1,95 +1,189 @@
-# Money-tree-tools
+# 💰 Money-tree-tools
 
-Passive-income service manager with a web dashboard and watchdog for the following supported services:
+Passive-income service manager with a web dashboard, watchdog, and automatic load control — optimized for **24/7 operation on Armbian TV boxes** and other low-power devices.
 
-- Honeygain
-- TraffMonetizer
-- Mysterium
-- Pawns
-- PacketStream
-- PacketShare
-- Repocket
-- EarnFM
-- Grass
-- ProxyRack
-- Bitping
-- Wipter
-- Uprock
+## ✨ Supported Services
 
-## Security Model
+| Service | Docker | Native | ARM Native |
+|---------|:------:|:------:|:----------:|
+| Honeygain | ✅ | | |
+| TraffMonetizer | ✅ | | |
+| Mysterium | ✅ | | ✅ |
+| Pawns | ✅ | | ✅ |
+| PacketStream | ✅ | | |
+| PacketShare | ✅ | | |
+| Repocket | ✅ | | |
+| EarnFM | ✅ | | |
+| Grass | ✅ | | |
+| ProxyRack | ✅ | | |
+| Bitping | ✅ | | ✅ |
+| Wipter | | ✅ | |
+| Uprock | | ✅ | |
+| Pingpong | | ✅ | ✅ |
 
-- Secrets are stored encrypted at rest in `.env.enc`.
-- The encryption key is stored at `MONEYTREE_SECRET_DIR/master.key` (defaults to `/etc/moneytree/master.key` on Linux).
-- Docker service images are pinned by immutable sha256 digests in `docker-compose.yml`.
-- Docker logs are rotated (5MB max, 1 file).
+## 🚀 Quick Start
 
-## Configuration
+### One-Command Install (Armbian / Debian / Ubuntu)
 
-- Start the dashboard service.
-- Open the dashboard and set all required credentials/tokens.
-- The dashboard writes an encrypted config at `.env.enc` and never persists a plaintext `.env`.
-
-Environment roots:
-
-- `MONEYTREE_CONFIG_DIR` (optional): override where `.env.enc` is stored (default: project root).
-- `MONEYTREE_SECRET_DIR` (optional): override where `master.key` is stored (default: `/etc/moneytree` on Linux).
-
-## Running
-
-On Debian/Ubuntu hosts with systemd, run the installer from the repo root:
+SSH into your device and run:
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/hieuit095/Money-tree-tools/main/quick-install.sh | bash
+```
+
+This single command will:
+1. Clone the repository to `/opt/moneytree`
+2. Install all system dependencies (Docker, Python, QEMU for ARM)
+3. Configure ZRAM swap and system tuning
+4. Apply Armbian/ARM optimizations (I/O scheduler, CPU governor)
+5. Create and start systemd services
+6. Launch the web dashboard
+
+### Manual Install (from cloned repo)
+
+```bash
+git clone https://github.com/hieuit095/Money-tree-tools.git
+cd Money-tree-tools
 bash install.sh
 ```
 
-On Windows hosts, you can run the same installer via WSL2 (Ubuntu recommended):
+### Windows (via WSL2)
 
 ```powershell
 .\install.ps1
 ```
 
-After install, open the dashboard and set all required credentials/tokens. The dashboard writes an encrypted config at `.env.enc` and never persists a plaintext `.env`.
+### After Installation
 
-Docker services are controlled via `docker compose` using a decrypted temporary env-file generated at runtime.
+1. Open the dashboard at **`http://<device-ip>:5000`**
+2. Login with default credentials: `admin` / `admin`
+3. Configure your service credentials and tokens
+4. Enable the services you want to run
+5. Click **Apply** — services start automatically
 
-Wipter and Uprock are managed as host-native systemd units (`wipter.service`, `uprock.service`) and are controlled from the dashboard when installed.
+## 🖥️ Dashboard
 
-## 24/7/365 Operation
+The web dashboard provides:
+- **Service control** — Start, stop, restart any service with one click
+- **Live status** — Real-time container health, CPU, RAM, and temperature
+- **Configuration** — Set all credentials and tokens from the browser
+- **ZRAM management** — Adjust compressed swap size without rebooting
+- **Load reduction** — Automatic thermal protection with configurable thresholds
+- **Logs** — View live container and service logs
 
-The project is optimized for always-on devices:
+## 🔒 Security Model
 
-- systemd-managed dashboard with automatic restart
-- ZRAM + VM tuning for low-memory stability
-- per-service Docker CPU/RAM/pid limits
-- capped/rotated Docker logs to prevent disk-fill outages
+- Secrets are stored **encrypted at rest** in `.env.enc` (Fernet/AES-128-CBC)
+- Encryption key stored at `/etc/moneytree/master.key` (mode `0600`)
+- Docker images **pinned by sha256 digest** in `docker-compose.yml`
+- Docker logs rotated (5 MB max) to prevent disk exhaustion
+- No plaintext `.env` file is ever persisted
 
-See [docs/24-7.md](file:///c:/Users/USER/Documents/GitHub/Money-tree-tools/docs/24-7.md) for operational guidance and SBC recommendations.
+## ⚡ 24/7 Operation
 
-## Armbian / ARM (Amlogic, Rockchip, etc.)
+Designed to run continuously on low-power devices:
 
-- `setup.sh` detects ARM and installs binfmt/qemu support so amd64-only images can still run under emulation.
-- Prefer running services natively by setting `TARGET_PLATFORM` to match your board:
-  - `linux/arm64` (most modern Armbian SBCs)
-  - `linux/arm/v7` (32-bit armv7)
-- You can override any single service by setting its `*_PLATFORM` variable (for example, `HONEYGAIN_PLATFORM=linux/amd64`).
-- To generate a compatibility report for your target platform:
+- **systemd-managed** dashboard with automatic restart and watchdog
+- **ZRAM** compressed swap for low-memory stability (auto-sized)
+- **Load guard** — monitors temperature/CPU/RAM and stops services before overheating
+- **Watchdog** — auto-recovers crashed services every 5 minutes
+- **Docker limits** — per-service CPU/RAM/PID caps prevent runaway containers
+- **Log rotation** — capped Docker + application logs prevent disk-fill
+- **Daily maintenance** — automatic Docker image/cache prune
 
+See [docs/24-7.md](docs/24-7.md) for operational details.
+
+## 🔧 Armbian / ARM TV Boxes
+
+The installer **auto-detects ARM architecture** and:
+- Installs `qemu-user-static` + `binfmt-support` for amd64 image emulation
+- Sets `TARGET_PLATFORM` to match your board (`linux/arm64` or `linux/arm/v7`)
+- Applies ARM-specific kernel tuning (I/O scheduler, CPU governor, VM dirty ratios)
+- Configures ZRAM with `zstd` compression (better ratio on low-RAM devices)
+
+Override per-service platforms if needed:
+```bash
+HONEYGAIN_PLATFORM=linux/amd64  # force specific image
+```
+
+Check image compatibility:
 ```bash
 TARGET_PLATFORM=linux/arm64 python scripts/check_image_platforms.py
 ```
 
-## Updating Image Digests
+See [docs/armbian_setup.md](docs/armbian_setup.md) for the full TV box installation guide.
 
-To refresh pinned digests and update `reports/image-digests.json`:
+## 📡 Multi-Device Deployment
 
-```bash
-python scripts/resolve_dockerhub_digests.py
-```
-
-## Tests
+Deploy to multiple devices at once using `deployer.py`:
 
 ```bash
-python -m pytest
+# Edit inventory.yaml with your devices
+python deployer.py
 ```
 
-The test suite enforces the allowed-service inventory, digest pinning, resource limits, and encrypted-config behavior.
+Define per-device profiles in `inventory.yaml`:
+```yaml
+profiles:
+  sbc_low:
+    ZRAM_SIZE_MB: 1024
+    WATCHDOG_INTERVAL_SEC: 300
+
+devices:
+  - ip: "192.168.1.15"
+    user: "orangepi"
+    pass: "orangepi"
+    box_id: "op-living-room"
+    profile: "sbc_low"
+    env:
+      TARGET_PLATFORM: "linux/arm64"
+```
+
+## 🔄 Updating
+
+From the dashboard, click **Update** or run manually:
+
+```bash
+cd /opt/moneytree
+git pull
+bash install.sh
+```
+
+## 📋 Configuration
+
+All settings are managed through the dashboard. Key environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `MONEYTREE_CONFIG_DIR` | Override config directory (default: project root) |
+| `MONEYTREE_SECRET_DIR` | Override key directory (default: `/etc/moneytree`) |
+| `TARGET_PLATFORM` | Docker platform override (e.g., `linux/arm64`) |
+| `ZRAM_SIZE_MB` | ZRAM swap size in megabytes |
+
+See [`.env.example`](.env.example) for all available variables.
+
+## 🧪 Tests
+
+```bash
+python -m pytest tests/ -v
+```
+
+## 📖 Useful Commands
+
+```bash
+# Dashboard
+systemctl status income-manager     # Check status
+journalctl -u income-manager -f     # Live logs
+
+# Docker services
+docker compose ps                   # Container status
+docker compose logs -f honeygain    # Service logs
+
+# System
+swapon --show                       # Check ZRAM swap
+cat /sys/block/zram0/comp_algorithm # Compression algo
+```
+
+## 📄 License
+
+See [LICENSE](LICENSE) for details.

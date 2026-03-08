@@ -43,12 +43,14 @@ def load_or_create_master_key() -> bytes:
     _ensure_secret_dir(paths.secret_dir)
 
     if os.path.exists(paths.key_path):
-        key = open(paths.key_path, "rb").read().strip()
+        with open(paths.key_path, "rb") as f:
+            key = f.read().strip()
         base64.urlsafe_b64decode(key)
         return key
 
     key = Fernet.generate_key()
-    open(paths.key_path, "wb").write(key + b"\n")
+    with open(paths.key_path, "wb") as f:
+        f.write(key + b"\n")
     if os.name == "posix":
         os.chmod(paths.key_path, 0o600)
     return key

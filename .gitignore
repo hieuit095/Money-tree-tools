@@ -6,3 +6,6 @@ __pycache__/
 *.pyc
 deploy_package.tar.gz
 moneytree.*.env
+inventory.yaml
+*.log
+venv/
