@@ -36,6 +36,7 @@ from app.systemd_notify import notify_ready, start_watchdog_ping
 from app.log_utils import parse_tail
 from app.runtime_state import load_last_apply
 from app.apply_manager import get_apply_status, start_apply
+from app import update_manager
 
 app = Flask(__name__)
 
@@ -246,58 +247,23 @@ def save_configuration():
     
     return redirect(url_for('dashboard'))
 
+@app.route('/api/version')
+@requires_auth
+def get_version():
+    return jsonify(update_manager.get_current_version())
+
 @app.route('/api/check-update')
 @requires_auth
 def check_update():
-    try:
-        # Ensure we run git commands in the project root
-        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        
-        # Fetch remote updates
-        subprocess.check_output(['git', 'fetch'], stderr=subprocess.STDOUT, cwd=project_root)
-        
-        # Get local and remote HEAD hashes
-        local_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=project_root).strip().decode('utf-8')
-        remote_hash = subprocess.check_output(['git', 'rev-parse', 'origin/main'], cwd=project_root).strip().decode('utf-8')
-        
-        # Check if behind
-        status = "up-to-date"
-        if local_hash != remote_hash:
-             status = "update-available"
-             
-        return jsonify({
-            "status": status,
-            "local_hash": local_hash,
-            "remote_hash": remote_hash
-        })
-    except subprocess.CalledProcessError as e:
-        return jsonify({"status": "error", "message": f"Git error: {e.output.decode('utf-8') if e.output else str(e)}"}), 500
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+    return jsonify(update_manager.check_for_updates())
 
 @app.route('/api/perform-update', methods=['POST'])
 @requires_auth
 def perform_update():
-    try:
-        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        
-        # Pull updates
-        output = subprocess.check_output(['git', 'pull'], stderr=subprocess.STDOUT, cwd=project_root).decode('utf-8')
-        
-        # Sync submodule
-        output += "\n" + subprocess.check_output(['git', 'submodule', 'update', '--init', '--recursive'], stderr=subprocess.STDOUT, cwd=project_root).decode('utf-8')
-        
-        def restart_server():
-            time.sleep(1)
-            os._exit(0)
-            
-        threading.Thread(target=restart_server).start()
-        
-        return jsonify({"status": "success", "message": output})
-    except subprocess.CalledProcessError as e:
-        return jsonify({"status": "error", "message": f"Update failed: {e.output.decode('utf-8') if e.output else str(e)}"}), 500
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+    res = update_manager.perform_update()
+    if res.get("status") == "success":
+        update_manager.schedule_restart()
+    return jsonify(res)
 
 
 @app.route("/api/system/zram", methods=["GET"])
